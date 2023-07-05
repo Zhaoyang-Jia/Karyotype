@@ -1,2 +1,4 @@
-def duplication(chr_name, telomere_start, telomere_end, centromere_start, centromere_end):
-    pass
+def deletion(sequence_start, sequence_end, centromere_start, centromere_end):
+    upper_len = centromere_start - sequence_start
+    lower_len = sequence_end - centromere_end
+
