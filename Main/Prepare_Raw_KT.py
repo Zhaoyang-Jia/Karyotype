@@ -16,12 +16,12 @@ def Prepare_Raw_KT(chr_of_interest, genome_index_file):
                 # p-arm
                 start_index = int(line[2])
                 end_index = int(line[3])
-                new_chromosome['p'].append((chromosome_origin, start_index, end_index))
+                new_chromosome['p'].append([chromosome_origin, start_index, end_index])
 
                 # q-arm
                 start_index = int(line[4])
                 end_index = int(line[5])
-                new_chromosome['q'].append((chromosome_origin, start_index, end_index))
+                new_chromosome['q'].append([chromosome_origin, start_index, end_index])
                 chromosomes.append(new_chromosome)
 
     return chromosomes
