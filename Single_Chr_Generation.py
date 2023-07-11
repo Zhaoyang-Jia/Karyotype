@@ -1,8 +1,6 @@
 import json
 import argparse
 
-from Preparation.Extract_Chr import Extract_Chr
-
 parser = argparse.ArgumentParser()
 parser.add_argument("JSON_file", help="path to the task-description JSON")
 args = parser.parse_args()
