@@ -4,7 +4,7 @@ def Prepare_Raw_KT(chr_of_interest, genome_index_file, output_path):
     :param chr_of_interest: list of chromosomes to generate KT
     :param output_path: .txt metadata file containing the unedited KT for each chromosome
     :param genome_index_file: .txt metadata file containing centromere, telomere, and genome length information
-    :return: None
+    :return:
     """
     segment_index = 1
     segments = []
@@ -52,6 +52,7 @@ def Prepare_Raw_KT(chr_of_interest, genome_index_file, output_path):
                 KT[chromosome_origin].insert(3, "+" + segment_name)
                 segment_index += 1
 
+    # output to file
     with open(output_path, 'w') as fp_write:
         for segment in segments:
             fp_write.writelines(segment + "\n")
@@ -60,3 +61,7 @@ def Prepare_Raw_KT(chr_of_interest, genome_index_file, output_path):
 
         for chromosome in KT:
             fp_write.writelines(",".join(KT[chromosome]) + "\n")
+
+    # prepare for return
+
+    return segments, KT
