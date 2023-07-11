@@ -1,0 +1,36 @@
+{
+  "job_name": "test_automatic",
+  "mode": "automatic",
+  "event_mode": "defined",
+  "chromosomes": [
+    1
+  ],
+  "number_of_events": {
+    "deletion": 1,
+    "duplication": 1,
+    "inversion": 1,
+    "translocation": 2
+  },
+  "event_setting": [
+    {
+      "type": "deletion",
+      "min_size": 1000,
+      "max_size": 2000
+    },
+    {
+      "type": "duplication",
+      "min_size": 1000,
+      "max_size": 2000
+    },
+    {
+      "type": "inversion",
+      "min_size": 1000,
+      "max_size": 2000
+    },
+    {
+      "type": "translocation",
+      "min_size": 1000,
+      "max_size": 2000
+    }
+  ]
+}

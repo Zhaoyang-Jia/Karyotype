@@ -1,4 +1,4 @@
-from Get_Telomere import Get_Telomere
+from Preparation.Get_Telomere import Get_Telomere
 
 # output = Get_Telomere('test_chr.fasta')
 # print(output)

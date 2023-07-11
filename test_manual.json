@@ -1,0 +1,35 @@
+{
+  "job_name": "test_manual",
+  "mode": "manual",
+  "chromosomes": [
+    1
+  ],
+  "events": [
+    {
+      "type": "deletion",
+      "chromosome": 1,
+      "start": 10500,
+      "end": 12000
+    },
+    {
+      "type": "duplication",
+      "chromosome": 1,
+      "start": 10500,
+      "end": 12000
+    },
+    {
+      "type": "inversion",
+      "chromosome": 1,
+      "start": 10500,
+      "end": 12000
+    },
+    {
+      "type": "translocation",
+      "chromosome_from": 1,
+      "start": 10500,
+      "end": 12000,
+      "chromosome_to": 1,
+      "insertion_site": 13000
+    }
+  ]
+}
