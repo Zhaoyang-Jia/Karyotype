@@ -257,4 +257,3 @@ test_p_arm2 = [Segment('Chr1', 0, 100)]
 this_KT = [{'p': test_p_arm1}]
 inversion(this_KT, 0, 'p', 27, 53)
 
-print(this_KT[0]['p'][0])
