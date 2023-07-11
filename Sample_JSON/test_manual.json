@@ -2,7 +2,7 @@
   "job_name": "test_manual",
   "mode": "manual",
   "chromosomes": [
-    1
+    "Chr1"
   ],
   "events": [
     {

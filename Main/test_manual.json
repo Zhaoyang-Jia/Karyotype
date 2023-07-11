@@ -1,0 +1,27 @@
+{
+  "job_name": "test_manual",
+  "mode": "manual",
+  "chromosomes": [
+    "Chr1"
+  ],
+  "events": [
+    {
+      "type": "deletion",
+      "chromosome": "Chr1",
+      "start": 1050000,
+      "end": 1200000
+    },
+    {
+      "type": "duplication",
+      "chromosome": "Chr1",
+      "start": 13000000,
+      "end": 14000000
+    },
+    {
+      "type": "inversion",
+      "chromosome": "Chr1",
+      "start": 10500,
+      "end": 1010500
+    }
+  ]
+}

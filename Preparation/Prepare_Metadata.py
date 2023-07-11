@@ -9,18 +9,18 @@ Steps required to prepare the metadata files
 REQUIRE manual input of centromere location
 """
 
-# Get_All_Chr_Names("../Genomes/GCF_000001405.26_GRCh38_genomic.fasta", "../Metadata/Header_Names.txt")
-#
-# Extract_Whole_Chr_Names("../Metadata/Header_Names.txt", "../Metadata/Chr_Names.txt")
-#
-# Get_Telomere("../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
-#              "../Metadata/Chr_Names.txt",
-#              "../Metadata/Telomere_Indices.txt",
-#              "../Metadata/Chr_Length.txt")
-# Genome_Indexing("../Metadata/Telomere_Indices.txt",
-#                 "../Metadata/Centromere_Indices.txt",
-#                 "../Metadata/Chr_Length.txt",
-#                 "../Metadata/Full_Genome_Indices.txt")
+Get_All_Chr_Names("../Genomes/GCF_000001405.26_GRCh38_genomic.fasta", "../Metadata/Header_Names.txt")
+
+Extract_Whole_Chr_Names("../Metadata/Header_Names.txt", "../Metadata/Chr_Names.txt")
+
+Get_Telomere("../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
+             "../Metadata/Chr_Names.txt",
+             "../Metadata/Telomere_Indices.txt",
+             "../Metadata/Chr_Length.txt")
+Genome_Indexing("../Metadata/Telomere_Indices.txt",
+                "../Metadata/Centromere_Indices.txt",
+                "../Metadata/Chr_Length.txt",
+                "../Metadata/Full_Genome_Indices.txt")
 
 # chr_to_extract = {'NC_000001.11 Homo sapiens chromosome 1, GRCh38 Primary Assembly': 'chr1',
 #                   'NC_000002.12 Homo sapiens chromosome 2, GRCh38 Primary Assembly': 'chr2'}

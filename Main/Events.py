@@ -250,10 +250,9 @@ def inversion(KT, chromosome_index, arm, cut_low, cut_high):
     KT[chromosome_index][arm] = new_arm
 
 
-test_p_arm1 = [Segment('Chr1', 0, 25), Segment('Chr1', 26, 37),
-               Segment('Chr1', 38, 39), Segment('Chr1', 40, 50), Segment('Chr1', 51, 76)]
-test_p_arm2 = [Segment('Chr1', 0, 100)]
-# this_KT = Prepare_Raw_KT(['Chr1'], "../Metadata/Full_Genome_Indices.txt")
-this_KT = [{'p': test_p_arm1}]
-inversion(this_KT, 0, 'p', 27, 53)
-
+# test_p_arm1 = [Segment('Chr1', 0, 25), Segment('Chr1', 26, 37),
+#                Segment('Chr1', 38, 39), Segment('Chr1', 40, 50), Segment('Chr1', 51, 76)]
+# test_p_arm2 = [Segment('Chr1', 0, 100)]
+# # this_KT = Prepare_Raw_KT(['Chr1'], "../Metadata/Full_Genome_Indices.txt")
+# this_KT = [{'p': test_p_arm1}]
+# inversion(this_KT, 0, 'p', 27, 53)
