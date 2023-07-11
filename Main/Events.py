@@ -1,3 +1,6 @@
+import copy
+
+
 class Segment:
     def __init__(self, chr, start, end):
         self.chr = chr
@@ -39,7 +42,7 @@ class Segment:
         else:
             self.end = self.start - start_index + 1
 
-    def inversion(self):
+    def invert(self):
         temp_start = self.start
         self.start = self.end
         self.end = temp_start
@@ -119,13 +122,139 @@ def deletion(KT, chromosome_index, arm, cut_low, cut_high):
                 break
 
     # remove empty segments
-    KT[chromosome_index][arm] = [element for index, element in enumerate(current_arm) if index not in index_marked_for_removal]
+    KT[chromosome_index][arm] = \
+        [element for index, element in enumerate(current_arm) if index not in index_marked_for_removal]
 
 
-test_p_arm1 = [Segment('Chr1', 0, 25), Segment('Chr1', 26, 38), Segment('Chr1', 39, 50), Segment('Chr1', 51, 76)]
+def duplication(KT, chromosome_index, arm, cut_low, cut_high):
+    current_arm = KT[chromosome_index][arm]
+
+    segment_indices = Segment_Indexing(current_arm)
+    # split left boundary into two segments
+    for segment_index in range(len(current_arm)):
+        segment_low = segment_indices[segment_index][0]
+        segment_high = segment_indices[segment_index][1]
+        if cut_low == segment_low:
+            # then no split required
+            # note, if cut_low == segment_high, split is still required
+            break
+        if segment_low < cut_low <= segment_high:
+            # split
+            new_segment = current_arm[segment_index].duplicate()
+            right_deletion_grounded_index = cut_low - segment_low
+            left_deletion_grounded_index = cut_low - segment_low - 1
+            current_arm[segment_index].right_deletion(right_deletion_grounded_index)
+            new_segment.left_deletion(left_deletion_grounded_index)
+            current_arm.insert(segment_index + 1, new_segment)
+            break
+
+    segment_indices = Segment_Indexing(current_arm)
+    # split right boundary into two segments
+    for segment_index in range(len(current_arm)):
+        segment_low = segment_indices[segment_index][0]
+        segment_high = segment_indices[segment_index][1]
+        if cut_high == segment_high:
+            # then no split required
+            # note, if cut_high == segment_low, split is still required
+            break
+        if segment_low <= cut_high < segment_high:
+            # split
+            new_segment = current_arm[segment_index].duplicate()
+            right_deletion_grounded_index = cut_high - segment_low + 1
+            left_deletion_grounded_index = cut_high - segment_low
+            current_arm[segment_index].right_deletion(right_deletion_grounded_index)
+            new_segment.left_deletion(left_deletion_grounded_index)
+            current_arm.insert(segment_index + 1, new_segment)
+            break
+
+    segment_indices = Segment_Indexing(current_arm)
+    # duplicate segments
+    duplicated_segments = []
+    first_index = -1
+    for segment_index in range(len(current_arm)):
+        segment_low = segment_indices[segment_index][0]
+        segment_high = segment_indices[segment_index][1]
+        if cut_low <= segment_low <= segment_high <= cut_high:
+            if first_index == -1:
+                first_index = segment_index
+            duplicated_segments.append(current_arm[segment_index].duplicate())
+
+    # duplicate right before the first segment for duplication
+    KT[chromosome_index][arm][first_index :first_index] = duplicated_segments
+
+
+def inversion(KT, chromosome_index, arm, cut_low, cut_high):
+    current_arm = KT[chromosome_index][arm]
+
+    segment_indices = Segment_Indexing(current_arm)
+    # split left boundary into two segments
+    for segment_index in range(len(current_arm)):
+        segment_low = segment_indices[segment_index][0]
+        segment_high = segment_indices[segment_index][1]
+        if cut_low == segment_low:
+            # then no split required
+            # note, if cut_low == segment_high, split is still required
+            break
+        if segment_low < cut_low <= segment_high:
+            # split
+            new_segment = current_arm[segment_index].duplicate()
+            right_deletion_grounded_index = cut_low - segment_low
+            left_deletion_grounded_index = cut_low - segment_low - 1
+            current_arm[segment_index].right_deletion(right_deletion_grounded_index)
+            new_segment.left_deletion(left_deletion_grounded_index)
+            current_arm.insert(segment_index + 1, new_segment)
+            break
+
+    segment_indices = Segment_Indexing(current_arm)
+    # split right boundary into two segments
+    for segment_index in range(len(current_arm)):
+        segment_low = segment_indices[segment_index][0]
+        segment_high = segment_indices[segment_index][1]
+        if cut_high == segment_high:
+            # then no split required
+            # note, if cut_high == segment_low, split is still required
+            break
+        if segment_low <= cut_high < segment_high:
+            # split
+            new_segment = current_arm[segment_index].duplicate()
+            right_deletion_grounded_index = cut_high - segment_low + 1
+            left_deletion_grounded_index = cut_high - segment_low
+            current_arm[segment_index].right_deletion(right_deletion_grounded_index)
+            new_segment.left_deletion(left_deletion_grounded_index)
+            current_arm.insert(segment_index + 1, new_segment)
+            break
+
+    segment_indices = Segment_Indexing(current_arm)
+    # mark segments for inversion
+    segment_index_to_invert = []
+    for segment_index in range(len(current_arm)):
+        segment_low = segment_indices[segment_index][0]
+        segment_high = segment_indices[segment_index][1]
+        if cut_low <= segment_low <= segment_high <= cut_high:
+            segment_index_to_invert.append(segment_index)
+
+    # invert
+    new_arm = []
+    first_index_for_inversion = segment_index_to_invert[0]
+    for segment_index in range(len(current_arm)):
+        if segment_index < first_index_for_inversion:
+            new_arm.append(current_arm[segment_index])
+        else:
+            break
+    for segment_index in reversed(segment_index_to_invert):
+        current_arm[segment_index].invert()
+        new_arm.append(current_arm[segment_index])
+    for segment_index in range(segment_index_to_invert[-1] + 1, len(current_arm)):
+        new_arm.append(current_arm[segment_index])
+
+    KT[chromosome_index][arm] = new_arm
+
+
+test_p_arm1 = [Segment('Chr1', 0, 25), Segment('Chr1', 26, 37),
+               Segment('Chr1', 38, 39), Segment('Chr1', 40, 50), Segment('Chr1', 51, 76)]
 test_p_arm2 = [Segment('Chr1', 0, 100)]
 # this_KT = Prepare_Raw_KT(['Chr1'], "../Metadata/Full_Genome_Indices.txt")
-this_KT = [{'p': test_p_arm2}]
-deletion(this_KT, 0, 'p', 27, 53)
+this_KT = [{'p': test_p_arm1}]
+inversion(this_KT, 0, 'p', 27, 53)
 
 print(this_KT[0]['p'][0])
