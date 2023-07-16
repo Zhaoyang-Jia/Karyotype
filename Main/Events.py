@@ -2,7 +2,7 @@ import copy
 
 
 class Segment:
-    def __init__(self, chr, start, end):
+    def __init__(self, chr: str, start: int, end: int):
         self.chr = chr
         self.start = start
         self.end = end
@@ -22,25 +22,25 @@ class Segment:
     def duplicate(self):
         return Segment(self.chr, self.start, self.end)
 
-    def left_deletion(self, end_index):
+    def left_delete(self, bp_to_delete):
         """
-        :param end_index: grounded index, right-bounded
+        :param bp_to_delete: number of bp deleting
         :return: None
         """
         if self.direction():
-            self.start = self.start + end_index + 1
+            self.start = self.start + bp_to_delete
         else:
-            self.start = self.start - end_index - 1
+            self.start = self.start - bp_to_delete
 
-    def right_deletion(self, start_index):
+    def right_delete(self, bp_to_delete):
         """
-        :param start_index: grounded index, left-bounded
+        :param bp_to_delete: number of bp deleting
         :return: None
         """
         if self.direction():
-            self.end = self.start + start_index - 1
+            self.end = self.end - bp_to_delete
         else:
-            self.end = self.start - start_index + 1
+            self.end = self.start + bp_to_delete
 
     def invert(self):
         temp_start = self.start
@@ -48,43 +48,88 @@ class Segment:
         self.end = temp_start
 
 
-def Prepare_Raw_KT(chr_of_interest, genome_index_file):
+class Chromosome:
+    def __init__(self, name: str, p_arm: [Segment], q_arm: [Segment], t1_len: int, t2_len: int, centromere: [Segment]):
+        self.name = name
+        self.p_arm = p_arm
+        self.q_arm = q_arm
+        self.t1_len = t1_len
+        self.t2_len = t2_len
+        self.centromere = centromere
+
+    def p_arm_len(self):
+        current_sum = 0
+        for segment in self.p_arm:
+            current_sum += len(segment)
+        return current_sum
+
+    def q_arm_len(self):
+        current_sum = 0
+        for segment in self.q_arm:
+            current_sum += len(segment)
+        return current_sum
+
+    def generate_breakpoint(self, arm: str, breakpoint_index: int):
+        if arm == 'p':
+            current_arm = self.p_arm
+        elif arm == 'q':
+            current_arm = self.q_arm
+        else:
+            raise ValueError('breakpoint arm wrong name')
+
+        current_segment_index = 0
+        current_bp_index = 0
+        for segment in current_arm:
+            current_bp_index += len(segment)
+            if current_bp_index == breakpoint_index:
+                # breakpoint exists
+                return
+            elif current_bp_index > breakpoint_index:
+                # breakpoint within the current segment
+                previous_bp_index = current_bp_index - len(segment)
+                new_segment = segment.duplicate()
+                new_segment.left_delete(breakpoint_index - previous_bp_index)
+                segment.right_delete(current_bp_index - breakpoint_index)
+                current_arm.insert(current_segment_index + 1, new_segment)
+                return
+            else:
+                # breakpoint location not yet met
+                current_segment_index += 1
+
+
+def Prepare_Raw_KT(chr_of_interest: [str], genome_index_file: str) -> [Chromosome]:
     """
     Compose unedited KT
     :param chr_of_interest: list of chromosomes to generate KT
     :param genome_index_file: .txt metadata file containing centromere, telomere, and genome length information
-    :return:
+    :return: a list of Chromosome Object
     """
     chromosomes = []
     with open(genome_index_file) as fp_read:
         for line in fp_read:
             line = line.replace('\n', '').split('\t')
             if line[0] in chr_of_interest:
-                new_chromosome = {"p": [], "q": []}
-                chromosome_origin = line[0]
+                chr_name = line[0]
+                p_arm_segment = Segment(chr_name, int(line[2]), int(line[3]))
+                q_arm_segment = Segment(chr_name, int(line[4]), int(line[5]))
+                t1_len = int(line[2])
+                t2_len = int(line[1]) - int(line[5]) - 1
+                centromere_segment = Segment(chr_name, int(line[3]) + 1, int(line[4]) - 1)
 
-                # p-arm
-                start_index = int(line[2])
-                end_index = int(line[3])
-                new_chromosome['p'].append(Segment(chromosome_origin, start_index, end_index))
-
-                # q-arm
-                start_index = int(line[4])
-                end_index = int(line[5])
-                new_chromosome['q'].append(Segment(chromosome_origin, start_index, end_index))
-                chromosomes.append(new_chromosome)
+                chromosomes.append(Chromosome(chr_name, [p_arm_segment], [q_arm_segment],
+                                              t1_len, t2_len, [centromere_segment]))
 
     return chromosomes
 
 
-def Segment_Indexing(KT_arm):
-    segment_indices = []
-    current_index = 0
-    for segment in KT_arm:
-        next_index = current_index + len(segment) - 1
-        segment_indices.append([current_index, next_index])
-        current_index = next_index + 1
-    return segment_indices
+# def Segment_Indexing(KT_arm):
+#     segment_indices = []
+#     current_index = 0
+#     for segment in KT_arm:
+#         next_index = current_index + len(segment) - 1
+#         segment_indices.append([current_index, next_index])
+#         current_index = next_index + 1
+#     return segment_indices
 
 
 def deletion(KT, chromosome_index, arm, cut_low, cut_high):

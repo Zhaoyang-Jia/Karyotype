@@ -4,7 +4,8 @@ def Genome_Indexing(telomere_file, centromere_file, length_file, output_path):
     :param telomere_file: .txt metadata file containing start and end of telomere indices
     :param centromere_file: .txt metadata file containing start and end of centromere indices
     :param length_file: .txt metadata file containing chromosome's length
-    :param output_path: .txt metadata file with (chr# \t length \t telo_end \t centro_start \t centro_end \t telo_start)
+    :param output_path: .txt metadata file with (chr# \t length \t sequence_start_after_t1 \t sequence_end_before_C
+    \t sequence_start_after_C \t sequence_start_before_t2)
     :return: None
     """
     indices_dict = {}

@@ -3,7 +3,7 @@
   "mode": "automatic",
   "event_mode": "random",
   "chromosomes": [
-    "Chr1"
+    1
   ],
   "number_of_events": 2,
   "event_setting": [
