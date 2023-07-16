@@ -58,6 +58,7 @@ class Arm:
 
     def __init__(self, segments: [Segment]):
         self.segments = segments
+        self.history = []
 
     def __len__(self):
         current_sum = 0
@@ -106,8 +107,8 @@ class Arm:
         new_history = tuple([event_type, segments])
         self.history.append(new_history)
 
-    def delete_segment_by_indices(self, indices):
-        self.segments = [element for index, element in enumerate(self.segments) if index not in indices]
+    def delete_segment_by_indices(self, segments_to_delete):
+        self.segments = [obj for obj in self.segments if obj not in segments_to_delete]
 
 
 class Chromosome:
@@ -151,14 +152,27 @@ def Prepare_Raw_KT(chr_of_interest: [str], genome_index_file: str) -> [Chromosom
     return chromosomes
 
 
-# def Segment_Indexing(KT_arm):
-#     segment_indices = []
-#     current_index = 0
-#     for segment in KT_arm:
-#         next_index = current_index + len(segment) - 1
-#         segment_indices.append([current_index, next_index])
-#         current_index = next_index + 1
-#     return segment_indices
+def locate_segments_for_event(event_arm: Arm, left_event_index: int, right_event_index: int) -> [Segment]:
+    """
+    create breakpoint and select the Segement between the breakpoints
+    :param event_arm: chromosome arm that the event will happen in
+    :param left_event_index: beginning of deletion, this index will be deleted
+    :param right_event_index: end of deletion, this index will be deleted
+    :return: a list of Segment for processing the event
+    """
+    event_arm.generate_breakpoint(left_event_index - 1)
+    event_arm.generate_breakpoint(right_event_index)
+
+    segments_selected = []
+    current_bp_index = -1  # corrects 0-index off-shift
+    for segment in event_arm.segments:
+        current_bp_index += len(segment)
+        if left_event_index <= current_bp_index <= right_event_index:
+            segments_selected.append(segment)
+        elif current_bp_index > right_event_index:
+            break
+
+    return segments_selected
 
 
 def deletion(event_arm: Arm, left_event_index: int, right_event_index: int):
@@ -169,88 +183,77 @@ def deletion(event_arm: Arm, left_event_index: int, right_event_index: int):
     :param right_event_index: end of deletion, this index will be deleted
     :return: None
     """
-    event_arm.generate_breakpoint(left_event_index - 1)
-    event_arm.generate_breakpoint(right_event_index)
-
-    segment_index_for_deletion = []
-    current_segment_index = 0
-    current_bp_index = -1  # corrects 0-index off-shift
-    for segment in event_arm.segments:
-        current_bp_index += len(segment)
-        if left_event_index <= current_bp_index <= right_event_index:
-            segment_index_for_deletion.append(current_segment_index)
-        elif current_bp_index > right_event_index:
-            break
-        current_segment_index += 1
-
+    segments_for_deletion = locate_segments_for_event(event_arm, left_event_index, right_event_index)
     # document segments deleted
-    segments_deleted = []
-    for segment_index in range(len(event_arm.segments)):
-        if segment_index in segment_index_for_deletion:
-            document_segment = event_arm.segments[segment_index].duplicate()
-            segments_deleted.append(document_segment)
-
+    event_arm.append_history('del', segments_for_deletion)
     # remove empty segments
-    event_arm.delete_segment_by_indices(segment_index_for_deletion)
+    event_arm.delete_segment_by_indices(segments_for_deletion)
 
     return
 
 
-def duplication(KT, chromosome_index, arm, cut_low, cut_high):
-    current_arm = KT[chromosome_index][arm]
-
-    segment_indices = Segment_Indexing(current_arm)
-    # split left boundary into two segments
-    for segment_index in range(len(current_arm)):
-        segment_low = segment_indices[segment_index][0]
-        segment_high = segment_indices[segment_index][1]
-        if cut_low == segment_low:
-            # then no split required
-            # note, if cut_low == segment_high, split is still required
-            break
-        if segment_low < cut_low <= segment_high:
-            # split
-            new_segment = current_arm[segment_index].duplicate()
-            right_deletion_grounded_index = cut_low - segment_low
-            left_deletion_grounded_index = cut_low - segment_low - 1
-            current_arm[segment_index].right_deletion(right_deletion_grounded_index)
-            new_segment.left_deletion(left_deletion_grounded_index)
-            current_arm.insert(segment_index + 1, new_segment)
-            break
-
-    segment_indices = Segment_Indexing(current_arm)
-    # split right boundary into two segments
-    for segment_index in range(len(current_arm)):
-        segment_low = segment_indices[segment_index][0]
-        segment_high = segment_indices[segment_index][1]
-        if cut_high == segment_high:
-            # then no split required
-            # note, if cut_high == segment_low, split is still required
-            break
-        if segment_low <= cut_high < segment_high:
-            # split
-            new_segment = current_arm[segment_index].duplicate()
-            right_deletion_grounded_index = cut_high - segment_low + 1
-            left_deletion_grounded_index = cut_high - segment_low
-            current_arm[segment_index].right_deletion(right_deletion_grounded_index)
-            new_segment.left_deletion(left_deletion_grounded_index)
-            current_arm.insert(segment_index + 1, new_segment)
-            break
-
-    segment_indices = Segment_Indexing(current_arm)
-    # duplicate segments
-    duplicated_segments = []
-    first_index = -1
-    for segment_index in range(len(current_arm)):
-        segment_low = segment_indices[segment_index][0]
-        segment_high = segment_indices[segment_index][1]
-        if cut_low <= segment_low <= segment_high <= cut_high:
-            if first_index == -1:
-                first_index = segment_index
-            duplicated_segments.append(current_arm[segment_index].duplicate())
-
-    # duplicate right before the first segment for duplication
-    KT[chromosome_index][arm][first_index :first_index] = duplicated_segments
+# def duplication(event_arm, left_event_index, right_event_index):
+#     """
+#     duplication even, inplace
+#     :param event_arm: chromosome arm that the event will happen in
+#     :param left_event_index: beginning of deletion, this index will be deleted
+#     :param right_event_index: end of deletion, this index will be deleted
+#     :return: None
+#     """
+#     event_arm.generate_breakpoint(left_event_index - 1)
+#     event_arm.generate_breakpoint(right_event_index)
+#
+#     # split left boundary into two segments
+#     for segment_index in range(len(current_arm)):
+#         segment_low = segment_indices[segment_index][0]
+#         segment_high = segment_indices[segment_index][1]
+#         if cut_low == segment_low:
+#             # then no split required
+#             # note, if cut_low == segment_high, split is still required
+#             break
+#         if segment_low < cut_low <= segment_high:
+#             # split
+#             new_segment = current_arm[segment_index].duplicate()
+#             right_deletion_grounded_index = cut_low - segment_low
+#             left_deletion_grounded_index = cut_low - segment_low - 1
+#             current_arm[segment_index].right_deletion(right_deletion_grounded_index)
+#             new_segment.left_deletion(left_deletion_grounded_index)
+#             current_arm.insert(segment_index + 1, new_segment)
+#             break
+#
+#     segment_indices = Segment_Indexing(current_arm)
+#     # split right boundary into two segments
+#     for segment_index in range(len(current_arm)):
+#         segment_low = segment_indices[segment_index][0]
+#         segment_high = segment_indices[segment_index][1]
+#         if cut_high == segment_high:
+#             # then no split required
+#             # note, if cut_high == segment_low, split is still required
+#             break
+#         if segment_low <= cut_high < segment_high:
+#             # split
+#             new_segment = current_arm[segment_index].duplicate()
+#             right_deletion_grounded_index = cut_high - segment_low + 1
+#             left_deletion_grounded_index = cut_high - segment_low
+#             current_arm[segment_index].right_deletion(right_deletion_grounded_index)
+#             new_segment.left_deletion(left_deletion_grounded_index)
+#             current_arm.insert(segment_index + 1, new_segment)
+#             break
+#
+#     segment_indices = Segment_Indexing(current_arm)
+#     # duplicate segments
+#     duplicated_segments = []
+#     first_index = -1
+#     for segment_index in range(len(current_arm)):
+#         segment_low = segment_indices[segment_index][0]
+#         segment_high = segment_indices[segment_index][1]
+#         if cut_low <= segment_low <= segment_high <= cut_high:
+#             if first_index == -1:
+#                 first_index = segment_index
+#             duplicated_segments.append(current_arm[segment_index].duplicate())
+#
+#     # duplicate right before the first segment for duplication
+#     KT[chromosome_index][arm][first_index :first_index] = duplicated_segments
 
 
 # def inversion(KT, chromosome_index, arm, cut_low, cut_high):
@@ -320,11 +323,11 @@ def duplication(KT, chromosome_index, arm, cut_low, cut_high):
 #     KT[chromosome_index][arm] = new_arm
 
 
-# test_p_arm1 = [Segment('Chr1', 0, 25), Segment('Chr1', 26, 37),
-#                Segment('Chr1', 38, 39), Segment('Chr1', 40, 50), Segment('Chr1', 51, 76)]
-# test_p_arm2 = [Segment('Chr1', 0, 100)]
-# # this_KT = Prepare_Raw_KT(['Chr1'], "../Metadata/Full_Genome_Indices.txt")
-# this_Arm = Arm(test_p_arm1)
-# documentation = deletion(this_Arm, 27, 53)
-# print(this_Arm)
-# print(Arm(documentation))
+test_p_arm1 = [Segment('Chr1', 0, 25), Segment('Chr1', 26, 37),
+               Segment('Chr1', 38, 39), Segment('Chr1', 40, 50), Segment('Chr1', 51, 76)]
+test_p_arm2 = [Segment('Chr1', 0, 100)]
+# this_KT = Prepare_Raw_KT(['Chr1'], "../Metadata/Full_Genome_Indices.txt")
+this_Arm = Arm(test_p_arm1)
+deletion(this_Arm, 27, 53)
+print(this_Arm)
+
