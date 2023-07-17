@@ -14,8 +14,32 @@ class Segment:
     def __len__(self):
         return abs(self.end - self.start) + 1
 
+    def __lt__(self, other):
+        def get_chr_order(chromosome_name):
+            chr_extracted = chromosome_name.replace('Chr', '')
+            if chr_extracted == 'X':
+                return 23
+            elif chr_extracted == 'Y':
+                return 24
+            else:
+                return int(chr_extracted)
+
+        if get_chr_order(self.chr) < get_chr_order(other.chr):
+            return True
+        elif get_chr_order(self.chr) > get_chr_order(other.chr):
+            return False
+        elif get_chr_order(self.chr) == get_chr_order(other.chr):
+            return max(self.start, self.end) < max(other.start, other.end)
+
     def __str__(self):
         return "({}, {}, {})".format(self.chr, self.start, self.end)
+
+    def same_segment_ignore_dir(self, other):
+        if self.start != other.start and self.start != other.end:
+            return False
+        if self.end != other.start and self.end != other.end:
+            return False
+        return True
 
     def direction(self):
         """
@@ -154,7 +178,7 @@ def Prepare_Raw_KT(chr_of_interest: [str], genome_index_file: str) -> [Chromosom
     :param genome_index_file: .txt metadata file containing centromere, telomere, and genome length information
     :return: a list of Chromosome Object
     """
-    chromosomes = []
+    chromosomes = {}
     with open(genome_index_file) as fp_read:
         for line in fp_read:
             line = line.replace('\n', '').split('\t')
@@ -166,8 +190,8 @@ def Prepare_Raw_KT(chr_of_interest: [str], genome_index_file: str) -> [Chromosom
                 t2_len = int(line[1]) - int(line[5]) - 1
                 centromere_segment = Segment(chr_name, int(line[3]) + 1, int(line[4]) - 1)
 
-                chromosomes.append(Chromosome(chr_name, Arm([p_arm_segment]), Arm([q_arm_segment]),
-                                              t1_len, t2_len, Arm([centromere_segment])))
+                chromosomes[chr_name] = Chromosome(chr_name, Arm([p_arm_segment]), Arm([q_arm_segment]),
+                                                   t1_len, t2_len, Arm([centromere_segment]))
 
     return chromosomes
 
@@ -228,12 +252,18 @@ def duplication(event_arm: Arm, left_event_index: int, right_event_index: int):
 
 
 def inversion(event_arm: Arm, left_event_index: int, right_event_index: int):
+    """
+    inversion even, inplace
+    :param event_arm: chromosome arm tha t the event will happen in
+    :param left_event_index: beginning of deletion, this index will be deleted
+    :param right_event_index: end of deletion, this index will be deleted
+    :return: None
+    """
     segments_for_inversion = locate_segments_for_event(event_arm, left_event_index, right_event_index)
     # document segments inverted
     event_arm.append_history('inv', segments_for_inversion)
     # invert segments
     event_arm.invert_segments(segments_for_inversion)
-
 
 # test_p_arm1 = [Segment('Chr1', 0, 25), Segment('Chr1', 26, 37),
 #                Segment('Chr1', 38, 39), Segment('Chr1', 40, 50), Segment('Chr1', 51, 76)]
@@ -243,4 +273,3 @@ def inversion(event_arm: Arm, left_event_index: int, right_event_index: int):
 # Arm2 = Arm(test_p_arm2)
 # inversion(Arm1, 27, 53)
 # print(Arm1)
-
