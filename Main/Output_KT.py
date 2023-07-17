@@ -1,22 +1,52 @@
 from Events import *
 
+from itertools import groupby
+
 
 def Output_KT(KT: {str: Chromosome}, output_path):
     # enumerate all segments in order
     def find_deleted_segments(arm: Arm):
         deleted_segments = []
-        for event in arm.history:
-            if event[0] == 'del':
-                deleted_segments.extend(event[1])
+        for event_itr in arm.history:
+            if event_itr[0] == 'deletion':
+                deleted_segments.extend(event_itr[1])
         return deleted_segments
 
-    segment_list = []
+    def update_set_with_positive_direction(working_set, segments_to_add):
+        for segment_itr in segments_to_add:
+            if segment_itr.direction():
+                working_set.add(segment_itr)
+            else:
+                new_segment = segment_itr.duplicate()
+                new_segment.invert()
+                working_set.add(new_segment)
+        return working_set
+
+    segment_set = set()
     for chr_name, chr_obj in KT.items():
-        segment_list.extend(chr_obj.p_arm.segments)
-        segment_list.extend(chr_obj.q_arm.segments)
-        segment_list.extend(find_deleted_segments(chr_obj.p_arm))
-        segment_list.extend(find_deleted_segments(chr_obj.q_arm))
+        segment_set = update_set_with_positive_direction(segment_set, chr_obj.p_arm.segments)
+        segment_set = update_set_with_positive_direction(segment_set, chr_obj.q_arm.segments)
+        segment_set = update_set_with_positive_direction(segment_set, find_deleted_segments(chr_obj.p_arm))
+        segment_set = update_set_with_positive_direction(segment_set, find_deleted_segments(chr_obj.q_arm))
+    segment_list = list(segment_set)
     segment_list.sort()
+
+    # segment_list = []
+    # for chr_name, chr_obj in KT.items():
+    #     segment_list.extend(chr_obj.p_arm.segments)
+    #     segment_list.extend(chr_obj.q_arm.segments)
+    #     segment_list.extend(find_deleted_segments(chr_obj.p_arm))
+    #     segment_list.extend(find_deleted_segments(chr_obj.q_arm))
+    # segment_list.sort()
+
+    # put segments into right direction
+    # for segment in segment_list:
+    #     if not segment.direction():
+    #         segment.invert()
+    #
+    # key_function = lambda x: (x.chr, x.start, x.end)
+    # unique_segments = [next(group) for key, group in groupby(segment_list, key_function)]
+    # segment_list = unique_segments
 
     segment_dict = {}
     for index in range(len(segment_list)):
@@ -26,15 +56,9 @@ def Output_KT(KT: {str: Chromosome}, output_path):
     def output_history(arm: Arm):
         history_list = []
         for history_itr in arm.history:
-            event_name = history_itr[0]
+            full_event_name = history_itr[0]
             event_segments = history_itr[1]
-            full_event_name = ''
-            if event_name == 'del':
-                full_event_name = 'deletion'
-            elif event_name == 'inv':
-                full_event_name = 'inversion'
-            elif event_name == 'dup:':
-                full_event_name = 'dup'
+
             indexed_segments = []
             for segment_itr in event_segments:
                 for segment_dict_segment in segment_dict:
@@ -57,11 +81,15 @@ def Output_KT(KT: {str: Chromosome}, output_path):
     def naming_segments(arm: Arm):
         str_list = []
         for segment_itr in arm.segments:
-            segment_sorted_index = segment_dict[segment_itr]
             if segment_itr.direction():
                 segment_direction = "+"
+                positive_direction_representation = segment_itr
             else:
                 segment_direction = "-"
+                new_segment = segment_itr.duplicate()
+                new_segment.invert()
+                positive_direction_representation = new_segment
+            segment_sorted_index = segment_dict[positive_direction_representation]
             str_list.append(str(segment_sorted_index) + segment_direction)
         return str_list
 
@@ -107,9 +135,12 @@ test_arm4 = Arm([Segment('Chr2', 100, 200)])
 test_centromere = Arm([Segment('Chr2', 77, 99)])
 Chr2 = Chromosome('Chr2', test_arm3, test_arm4, 100, 100, test_centromere)
 
-# this_KT = Prepare_Raw_KT(['Chr1'], "../Metadata/Full_Genome_Indices.txt")
 this_KT = {'Chr1': Chr1, 'Chr2': Chr2}
-inversion(this_KT['Chr1'].p_arm, 27, 53)
-deletion(this_KT['Chr2'].q_arm, 27, 53)
+# this_KT = {'Chr1': Chr1}
+# duplication(this_KT['Chr1'].p_arm, 27, 53)
+# duplication_inversion(this_KT['Chr1'].p_arm, 27, 53)
+# translocation_reciprocal(this_KT['Chr1'].p_arm, 27, 53, this_KT['Chr2'].q_arm, 27, 53)
+# inversion(this_KT['Chr1'].p_arm, 27, 53)
+# deletion(this_KT['Chr2'].q_arm, 27, 53)
 
-Output_KT(this_KT, "test_KT_out2.txt")
+Output_KT(this_KT, "test_KT_out4.txt")
