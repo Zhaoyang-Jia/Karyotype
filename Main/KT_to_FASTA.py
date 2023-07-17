@@ -1,8 +1,8 @@
 from Events import *
+from read_in_FASTA import read_in_FASTA
 
 
-# ONLY WORKS ON Chr1 AT THE MOMENT
-def KT_to_FASTA(KT, genome_path, genome_index_file, chr_name_file, output_path):
+def KT_to_FASTA(KT: {str: Chromosome}, genome_path: str, chr_name_file: str, output_path: str):
     chr_name_conversion = {}
     full_name_list = []
     with open(chr_name_file) as fp_read:
@@ -11,51 +11,41 @@ def KT_to_FASTA(KT, genome_path, genome_index_file, chr_name_file, output_path):
             chr_name_conversion[line[0]] = line[1]
             full_name_list.append(line[1])
 
-    # read in genome
-    sequence_dict = {}
-    with open(genome_path) as fp_read:
-        recording = False
-        for line in fp_read:
-            if line[0] == '>':
-                # header line
-                if recording:
-                    sequence_dict[header] = ''.join(segment_sequence)
-                    recording = False
-                if line[1:].replace('\n', '') in full_name_list:
-                    recording = True
-                    segment_sequence = []
-                    header = line[1:].replace('\n', '')
+    sequence_dict = read_in_FASTA(genome_path, full_name_list)
+
+    output_dict = {}
+    for chr_name, chr_obj in KT.items():
+        new_sequence = []
+        # telomere 1
+        new_sequence.append('N' * chr_obj.t1_len)
+        # p-arm
+        for segment in chr_obj.p_arm.segments:
+            if segment.direction():
+                new_sequence.append(sequence_dict[chr_name_conversion[segment.chr]][segment.start: segment.end + 1])
             else:
-                # sequence line
-                if recording:
-                    segment_sequence.append(line.replace('\n', ''))
-    # record the last segment
-    if recording:
-        sequence_dict[header] = ''.join(segment_sequence)
+                new_sequence.append(sequence_dict[chr_name_conversion[segment.chr]][segment.end: segment.start + 1]
+                                    [::-1])
+        # centromere
+        for segment in chr_obj.centromere.segments:
+            if segment.direction():
+                new_sequence.append(sequence_dict[chr_name_conversion[segment.chr]][segment.start: segment.end + 1])
+            else:
+                new_sequence.append(sequence_dict[chr_name_conversion[segment.chr]][segment.end: segment.start + 1]
+                                    [::-1])
+        # q-arm
+        for segment in chr_obj.q_arm.segments:
+            if segment.direction():
+                new_sequence.append(sequence_dict[chr_name_conversion[segment.chr]][segment.start: segment.end + 1])
+            else:
+                new_sequence.append(sequence_dict[chr_name_conversion[segment.chr]][segment.end: segment.start + 1]
+                                    [::-1])
+        # telomere 2
+        new_sequence.append('N' * chr_obj.t2_len)
 
-    # construct new chromosome sequence
-    new_sequence = []
-    # telomere 1
-    new_sequence.append(sequence_dict['NC_000001.11 Homo sapiens chromosome 1, GRCh38 Primary Assembly'][0:10000])
-    # p-arm
-    for segment in KT[0]['p']:
-        start = segment.start
-        end = segment.end
-        new_sequence.append(sequence_dict['NC_000001.11 Homo sapiens chromosome 1, GRCh38 Primary Assembly']
-                            [start: end + 1])
-    # centromere
-    new_sequence.append(sequence_dict['NC_000001.11 Homo sapiens chromosome 1, GRCh38 Primary Assembly']
-                            [122026459: 125184588])
-    # q-arm
-    for segment in KT[0]['q']:
-        start = segment.start
-        end = segment.end
-        new_sequence.append(sequence_dict['NC_000001.11 Homo sapiens chromosome 1, GRCh38 Primary Assembly']
-                            [start: end + 1])
-    # telomere 2
-    new_sequence.append(sequence_dict['NC_000001.11 Homo sapiens chromosome 1, GRCh38 Primary Assembly']
-                        [248946421:])
+        output_dict[chr_name] = ''.join(new_sequence)
 
-    with open(output_path, "w") as fp_write:
-        fp_write.writelines(">1\n")
-        fp_write.writelines("".join(new_sequence))
+    # output
+    with open(output_path, 'w') as fp_write:
+        for header, sequence in output_dict.items():
+            fp_write.writelines(">{}\n".format(header))
+            fp_write.writelines(sequence + "\n")

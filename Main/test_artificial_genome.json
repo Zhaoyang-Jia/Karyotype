@@ -1,0 +1,31 @@
+{
+  "job_name": "test_artificial_genome",
+  "mode": "manual",
+  "chromosomes": [
+    "Chr1",
+    "Chr2"
+  ],
+  "events": [
+    {
+      "type": "deletion",
+      "chromosome": "Chr1",
+      "arm": "p",
+      "start": 17,
+      "end": 45
+    },
+    {
+      "type": "deletion",
+      "chromosome": "Chr1",
+      "arm": "q",
+      "start": 20,
+      "end": 40
+    },
+    {
+      "type": "inversion",
+      "chromosome": "Chr2",
+      "arm": "p",
+      "start": 20,
+      "end": 40
+    }
+  ]
+}

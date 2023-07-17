@@ -1,3 +1,6 @@
+from Main.read_in_FASTA import read_in_FASTA
+
+
 def Get_Telomere(genome_path, chr_name_file, telomere_output_path, length_output_path):
     """
     Detect and Return Telomere region, and total length of the chromosome
@@ -15,27 +18,8 @@ def Get_Telomere(genome_path, chr_name_file, telomere_output_path, length_output
             line = line.replace('\n', '').split('\t')
             chr_of_interest[line[1]] = line[0]
 
-    sequence_dict = {}
+    sequence_dict = read_in_FASTA(genome_path, chr_of_interest.keys())
     telomere_dict = {}
-    with open(genome_path) as fp_read:
-        recording = False
-        for line in fp_read:
-            if line[0] == '>':
-                # header line
-                if recording:
-                    sequence_dict[header] = ''.join(segment_sequence)
-                    recording = False
-                if line[1:].replace('\n', '') in chr_of_interest:
-                    recording = True
-                    segment_sequence = []
-                    header = line[1:].replace('\n', '')
-            else:
-                # sequence line
-                if recording:
-                    segment_sequence.append(line.replace('\n', ''))
-    # record the last segment
-    if recording:
-        sequence_dict[header] = ''.join(segment_sequence)
 
     # locate the telomere regions
     for itr_header in sequence_dict:

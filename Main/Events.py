@@ -145,20 +145,8 @@ class Arm:
         new_history = tuple([event_type, segments])
         self.history.append(new_history)
 
-    # def delete_segments(self, segments_to_delete):
-    #     self.segments = [obj for obj in self.segments if obj not in segments_to_delete]
-
     def delete_segments_by_index(self, segment_indices):
         self.segments = [segment for index, segment in enumerate(self.segments) if index not in segment_indices]
-
-    # def duplicate_segments(self, segments_to_duplicate):
-    #     # segments come in order, so insert before the first segment
-    #     index_of_insertion = self.segments.index(segments_to_duplicate[0])
-    #     new_segments = []
-    #     for segment in segments_to_duplicate:
-    #         new_segments.append(segment.duplicate())
-    #
-    #     self.segments[index_of_insertion:index_of_insertion] = new_segments
 
     def duplicate_segments_by_index(self, segment_indices):
         # segments come in order, so insert before the first segment
@@ -168,17 +156,6 @@ class Arm:
             new_segments.append(self.segments[index].duplicate())
 
         self.segments[index_of_insertion:index_of_insertion] = new_segments
-
-    # def invert_segments(self, segment_to_invert):
-    #     # segments come in order
-    #     index_of_insertion = self.segments.index(segment_to_invert[0])
-    #     new_segments = []
-    #     for segment in reversed(segment_to_invert):
-    #         new_segment = segment.duplicate()
-    #         new_segment.invert()
-    #         new_segments.append(new_segment)
-    #     self.delete_segments(segment_to_invert)
-    #     self.segments[index_of_insertion:index_of_insertion] = new_segments
 
     def invert_segments_by_index(self, segment_indices):
         # segments come in order
@@ -200,6 +177,9 @@ class Chromosome:
         self.t1_len = t1_len
         self.t2_len = t2_len
         self.centromere = centromere
+
+    def __len__(self):
+        return self.p_arm_len() + self.q_arm_len()
 
     def p_arm_len(self):
         return len(self.p_arm)

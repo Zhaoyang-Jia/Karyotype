@@ -13,7 +13,15 @@ args = parser.parse_args()
 with open(args.JSON_file) as file:
     instruction = json.load(file)
 
-KT = Prepare_Raw_KT(instruction['chromosomes'], "../Metadata/Full_Genome_Indices.txt")
+chr_of_events = []
+if instruction['chromosomes'][0] == "ALL":
+    chr_of_events = ['Chr1', 'Chr2', 'Chr3', 'Chr4', 'Chr5', 'Chr6', 'Chr7', 'Chr8', 'Chr9', 'Chr10', 'Chr11', 'Chr12',
+                     'Chr13', 'Chr14', 'Chr15', 'Chr16', 'Chr17', 'Chr18', 'Chr19', 'Chr20', 'Chr21', 'Chr22', 'ChrX',
+                     'ChrY']
+else:
+    chr_of_events = instruction['chromosomes']
+KT = Prepare_Raw_KT(chr_of_events, "../Metadata/Full_Genome_Indices.txt")
+
 mode = instruction['mode']
 
 # manual mode
@@ -44,42 +52,119 @@ if mode == 'manual':
 
     Output_KT(KT, "KT_" + instruction['job_name'] + ".txt")
     KT_to_FASTA(KT, genome_path="../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
-                genome_index_file="../Metadata/Full_Genome_Indices.txt",
                 chr_name_file="../Metadata/Chr_Names.txt",
                 output_path=instruction['job_name'] + ".fasta")
+    # KT_to_FASTA(KT, genome_path="../Genomes/test_genome.fasta",
+    #             chr_name_file="../Metadata/Chr_Names.txt",
+    #             output_path=instruction['job_name'] + ".fasta")
 
 # automatic mode
-# elif mode == 'automatic':
-#     event_settings = instruction['event_setting']
-#     event_weights = [event_settings[0]['ratio'], event_settings[1]['ratio'], event_settings[2]['ratio']]
-#     if sum(event_weights) != 1:
-#         print('ratio error, must sum up to 1')
-#
-#     for event_index in range(instruction['number_of_events']):
-#         # choose event
-#         current_event = random.choices([0, 1, 2], weights=event_weights)[0]
-#         # choose length
-#         current_event_length = random.randint(event_settings[current_event]['min_size'],
-#                                               event_settings[current_event]['max_size'])
-#         # choose arm
-#         current_arm = random.choices(["p", "q"])[0]
-#
-#         # choose start location
-#         current_event_start_location = random.randint(10000, 10000000 - current_event_length)
-#
-#         # perform event
-#         if current_event == 0:
-#             deletion(KT, 0, current_arm,
-#                      current_event_start_location, current_event_start_location + current_event_length)
-#         elif current_event == 1:
-#             duplication(KT, 0, current_arm,
-#                         current_event_start_location, current_event_start_location + current_event_length)
-#         elif current_event == 2:
-#             inversion(KT, 0, current_arm,
-#                       current_event_start_location, current_event_start_location + current_event_length)
-#
-#         Output_KT(KT, "KT_" + instruction['job_name'] + ".txt")
-#         KT_to_FASTA(KT, genome_path="../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
-#                     genome_index_file="../Metadata/Full_Genome_Indices.txt",
-#                     chr_name_file="../Metadata/Chr_Names.txt",
-#                     output_path=instruction['job_name'] + ".fasta")
+elif mode == 'automatic':
+    event_settings = instruction['event_setting']
+
+    # scale event weights
+    sum_weight = 0.0
+    for index in range(6):
+        sum_weight += event_settings[index]['ratio']
+    event_weights = []
+    for index in range(6):
+        event_weights.append(float(event_settings[index]['ratio']) / sum_weight)
+
+    # perform events
+    for event_index in range(instruction['number_of_events']):
+        # choose event
+        current_event = random.choices(range(6), weights=event_weights)[0]
+
+        # choose chr
+        current_chr1 = -1
+        current_chr2 = -1
+        chr_weights = []
+        sum_length = 0.0
+        for chromosome in chr_of_events:
+            sum_length += len(chromosome)
+        for chromosome in chr_of_events:
+            chr_weights.append(float(len(chromosome)) / sum_length)
+        current_chr1 = random.choices(chr_of_events, chr_weights)[0]
+        if current_event == 5:
+            # event is inter-chromosomal
+            current_chr1_index = chr_of_events.index(current_chr1)
+            possible_chr = chr_of_events
+            possible_chr.remove(current_chr1)
+            chr_weights.pop(current_chr1_index)
+            current_chr2 = random.choices(possible_chr, chr_weights)[0]
+        elif current_event == 4:
+            current_chr2 = current_chr1
+
+        # choose arm
+        arm_weights = [float(KT[current_chr1].p_arm_len()) / len(KT[current_chr1]),
+                       float(KT[current_chr1].q_arm_len()) / len(KT[current_chr1])]
+        current_arm1_value = random.choices(["p", "q"], arm_weights)[0]
+        current_arm1 = None
+        current_arm2 = None
+        if current_arm1_value == 'p':
+            current_arm1 = KT[current_chr1].p_arm
+        else:
+            current_arm1 = KT[current_chr1].q_arm
+        if current_event == 5:
+            sum_arm_length = len(KT[current_chr2])
+            arm_weights = [float(KT[current_chr2].p_arm_len()) / len(KT[current_chr2]),
+                           float(KT[current_chr2].q_arm_len()) / len(KT[current_chr2])]
+            current_arm2_value = random.choices(["p", "q"], arm_weights)[0]
+            if current_arm2_value == 'p':
+                current_arm2 = KT[current_chr2].p_arm
+            else:
+                current_arm2 = KT[current_chr2].q_arm
+        elif current_event == 4:
+            arm_weights = [float(KT[current_chr1].p_arm_len()) / len(KT[current_chr1]),
+                           float(KT[current_chr1].q_arm_len()) / len(KT[current_chr1])]
+            current_arm2_value = random.choices(["p", "q"], arm_weights)[0]
+            if current_arm2_value == 'p':
+                current_arm2 = KT[current_chr1].p_arm
+            else:
+                current_arm2 = KT[current_chr1].q_arm
+
+        # choose length
+        current_event1_length = -1
+        current_event2_length = -1
+        if current_event in range(4):
+            current_event1_length = random.randint(event_settings[current_event]['min_size'],
+                                                   event_settings[current_event]['max_size'])
+            current_event1_length = min(current_event1_length, len(current_arm1) - 1)
+        elif current_event == 4 or current_event == 5:
+            current_event1_length = random.randint(event_settings[current_event]['min_size1'],
+                                                   event_settings[current_event]['max_size1'])
+            current_event1_length = min(current_event1_length, len(current_arm1) - 1)
+            current_event2_length = random.randint(event_settings[current_event]['min_size2'],
+                                                   event_settings[current_event]['max_size2'])
+            current_event2_length = min(current_event2_length, len(current_arm2) - 1)
+
+        # choose start location
+        current_event_start_location1 = random.randint(0, len(current_arm1) - current_event1_length - 1)
+        current_event_start_location2 = -1
+        if current_event2_length != -1:
+            current_event_start_location2 = random.randint(0, len(current_arm2) - current_event2_length - 1)
+
+        # perform event
+        if current_event == 0:
+            deletion(current_arm1, current_event_start_location1,
+                     current_event_start_location1 + current_event1_length)
+        elif current_event == 1:
+            duplication(current_arm1, current_event_start_location1,
+                        current_event_start_location1 + current_event1_length)
+        elif current_event == 2:
+            inversion(current_arm1, current_event_start_location1,
+                      current_event_start_location1 + current_event1_length)
+        elif current_event == 3:
+            duplication_inversion(current_arm1, current_event_start_location1,
+                                  current_event_start_location1 + current_event1_length)
+        elif current_event == 4 or current_event == 5:
+            translocation_reciprocal(current_arm1, current_event_start_location1,
+                                     current_event_start_location1 + current_event1_length,
+                                     current_arm2, current_event_start_location2,
+                                     current_event_start_location2 + current_event2_length)
+
+    # output
+    Output_KT(KT, "KT_" + instruction['job_name'] + ".txt")
+    KT_to_FASTA(KT, genome_path="../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
+                chr_name_file="../Metadata/Chr_Names.txt",
+                output_path=instruction['job_name'] + ".fasta")

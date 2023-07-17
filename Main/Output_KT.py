@@ -123,24 +123,24 @@ def Output_KT(KT: {str: Chromosome}, output_path):
                                         q_str=','.join(chromosome_segments[1])))
 
 
-test_arm1 = Arm([Segment('Chr1', 0, 25), Segment('Chr1', 26, 37),
-                 Segment('Chr1', 38, 39), Segment('Chr1', 40, 50), Segment('Chr1', 51, 76)])
-test_arm2 = Arm([Segment('Chr1', 100, 200)])
-test_centromere = Arm([Segment('Chr1', 77, 99)])
-Chr1 = Chromosome('Chr1', test_arm1, test_arm2, 100, 100, test_centromere)
-
-test_arm3 = Arm([Segment('Chr2', 0, 25), Segment('Chr2', 26, 37),
-                 Segment('Chr2', 38, 39), Segment('Chr2', 40, 50), Segment('Chr2', 51, 76)])
-test_arm4 = Arm([Segment('Chr2', 100, 200)])
-test_centromere = Arm([Segment('Chr2', 77, 99)])
-Chr2 = Chromosome('Chr2', test_arm3, test_arm4, 100, 100, test_centromere)
-
-this_KT = {'Chr1': Chr1, 'Chr2': Chr2}
-# this_KT = {'Chr1': Chr1}
-# duplication(this_KT['Chr1'].p_arm, 27, 53)
-# duplication_inversion(this_KT['Chr1'].p_arm, 27, 53)
-# translocation_reciprocal(this_KT['Chr1'].p_arm, 27, 53, this_KT['Chr2'].q_arm, 27, 53)
-# inversion(this_KT['Chr1'].p_arm, 27, 53)
-# deletion(this_KT['Chr2'].q_arm, 27, 53)
-
-Output_KT(this_KT, "test_KT_out4.txt")
+# test_arm1 = Arm([Segment('Chr1', 0, 25), Segment('Chr1', 26, 37),
+#                  Segment('Chr1', 38, 39), Segment('Chr1', 40, 50), Segment('Chr1', 51, 76)])
+# test_arm2 = Arm([Segment('Chr1', 100, 200)])
+# test_centromere = Arm([Segment('Chr1', 77, 99)])
+# Chr1 = Chromosome('Chr1', test_arm1, test_arm2, 100, 100, test_centromere)
+#
+# test_arm3 = Arm([Segment('Chr2', 0, 25), Segment('Chr2', 26, 37),
+#                  Segment('Chr2', 38, 39), Segment('Chr2', 40, 50), Segment('Chr2', 51, 76)])
+# test_arm4 = Arm([Segment('Chr2', 100, 200)])
+# test_centromere = Arm([Segment('Chr2', 77, 99)])
+# Chr2 = Chromosome('Chr2', test_arm3, test_arm4, 100, 100, test_centromere)
+#
+# this_KT = {'Chr1': Chr1, 'Chr2': Chr2}
+# # this_KT = {'Chr1': Chr1}
+# # duplication(this_KT['Chr1'].p_arm, 27, 53)
+# # duplication_inversion(this_KT['Chr1'].p_arm, 27, 53)
+# # translocation_reciprocal(this_KT['Chr1'].p_arm, 27, 53, this_KT['Chr2'].q_arm, 27, 53)
+# # inversion(this_KT['Chr1'].p_arm, 27, 53)
+# # deletion(this_KT['Chr2'].q_arm, 27, 53)
+#
+# Output_KT(this_KT, "test_KT_out4.txt")
