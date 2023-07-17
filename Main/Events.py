@@ -41,6 +41,12 @@ class Segment:
             return False
         return True
 
+    def to_string_ignore_dir(self):
+        if self.direction():
+            return "{}:{}-{}".format(self.chr, self.start, self.end)
+        else:
+            return "{}:{}-{}".format(self.chr, self.end, self.start)
+
     def direction(self):
         """
         :return: 1 for +, 0 for -
@@ -171,7 +177,7 @@ class Chromosome:
         return len(self.q_arm)
 
 
-def Prepare_Raw_KT(chr_of_interest: [str], genome_index_file: str) -> [Chromosome]:
+def Prepare_Raw_KT(chr_of_interest: [str], genome_index_file: str) -> {str: Chromosome}:
     """
     Compose unedited KT
     :param chr_of_interest: list of chromosomes to generate KT
