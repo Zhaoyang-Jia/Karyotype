@@ -1,0 +1,70 @@
+{
+  "job_name": "test_hybrid",
+  "mode": [
+    "manual",
+    "automatic"
+  ],
+  "chromosomes": [
+    "Chr1"
+  ],
+  "job_cycle": [
+    {
+      "mode": "manual",
+      "events": [
+        {
+          "type": "deletion",
+          "chromosome": "Chr1",
+          "arm": "p",
+          "start": 1050000,
+          "end": 1200000
+        }
+      ]
+    },
+    {
+      "mode": "automatic",
+      "number_of_events": 1,
+      "event_setting": [
+        {
+          "type": "deletion",
+          "ratio": 1,
+          "min_size": 100000,
+          "max_size": 200000
+        },
+        {
+          "type": "duplication",
+          "ratio": 1,
+          "min_size": 100000,
+          "max_size": 200000
+        },
+        {
+          "type": "inversion",
+          "ratio": 1,
+          "min_size": 100000,
+          "max_size": 200000
+        },
+        {
+          "type": "duplication_inversion",
+          "ratio": 1,
+          "min_size": 100000,
+          "max_size": 200000
+        },
+        {
+          "type": "intra_translocation_reciprocal",
+          "ratio": 1,
+          "min_size1": 100000,
+          "max_size1": 200000,
+          "min_size2": 100000,
+          "max_size2": 200000
+        },
+        {
+          "type": "inter_translocation_reciprocal",
+          "ratio": 1,
+          "min_size1": 100000,
+          "max_size1": 200000,
+          "min_size2": 100000,
+          "max_size2": 200000
+        }
+      ]
+    }
+  ]
+}

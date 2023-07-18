@@ -1,0 +1,85 @@
+{
+  "job_name": "test_automatic",
+  "mode": [
+    "manual",
+    "automatic"
+  ],
+  "event_mode": "random",
+  "chromosomes": [
+    "ALL"
+  ],
+  "job_cycle": [
+    {
+      "mode": "manual",
+      "events": [
+        {
+          "type": "deletion",
+          "chromosome": "Chr1",
+          "arm": "p",
+          "start": 1050000,
+          "end": 1200000
+        },
+        {
+          "type": "duplication",
+          "chromosome": "Chr1",
+          "arm": "p",
+          "start": 13000000,
+          "end": 14000000
+        },
+        {
+          "type": "inversion",
+          "chromosome": "Chr1",
+          "arm": "p",
+          "start": 10500,
+          "end": 1010500
+        }
+      ]
+    },
+    {
+      "mode": "automatic",
+      "number_of_events": 4,
+      "event_setting": [
+        {
+          "type": "deletion",
+          "ratio": 1,
+          "min_size": 100000,
+          "max_size": 200000
+        },
+        {
+          "type": "duplication",
+          "ratio": 1,
+          "min_size": 100000,
+          "max_size": 200000
+        },
+        {
+          "type": "inversion",
+          "ratio": 1,
+          "min_size": 100000,
+          "max_size": 200000
+        },
+        {
+          "type": "duplication_inversion",
+          "ratio": 1,
+          "min_size": 100000,
+          "max_size": 200000
+        },
+        {
+          "type": "intra_translocation_reciprocal",
+          "ratio": 1,
+          "min_size1": 100000,
+          "max_size1": 200000,
+          "min_size2": 100000,
+          "max_size2": 200000
+        },
+        {
+          "type": "inter_translocation_reciprocal",
+          "ratio": 1,
+          "min_size1": 100000,
+          "max_size1": 200000,
+          "min_size2": 100000,
+          "max_size2": 200000
+        }
+      ]
+    }
+  ]
+}

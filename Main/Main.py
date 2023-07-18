@@ -8,31 +8,17 @@ from KT_to_FASTA import KT_to_FASTA
 
 parser = argparse.ArgumentParser()
 parser.add_argument("JSON_file", help="path to the task-description JSON")
+parser.add_argument("output_dir", help="path to the output dir")
 args = parser.parse_args()
 
-with open(args.JSON_file) as file:
-    instruction = json.load(file)
 
-chr_of_events = []
-if instruction['chromosomes'][0] == "ALL":
-    chr_of_events = ['Chr1', 'Chr2', 'Chr3', 'Chr4', 'Chr5', 'Chr6', 'Chr7', 'Chr8', 'Chr9', 'Chr10', 'Chr11', 'Chr12',
-                     'Chr13', 'Chr14', 'Chr15', 'Chr16', 'Chr17', 'Chr18', 'Chr19', 'Chr20', 'Chr21', 'Chr22', 'ChrX',
-                     'ChrY']
-else:
-    chr_of_events = instruction['chromosomes']
-KT = Prepare_Raw_KT(chr_of_events, "../Metadata/Full_Genome_Indices.txt")
-
-mode = instruction['mode']
-
-# manual mode
-if mode == 'manual':
-    events = instruction['events']
-    for event in events:
+def manual_mode(input_events, input_KT):
+    for event in input_events:
         event_type = event['type']
         if event['arm'] == 'p':
-            event_arm = KT[event['chromosome']].p_arm
+            event_arm = input_KT[event['chromosome']].p_arm
         elif event['arm'] == 'q':
-            event_arm = KT[event['chromosome']].q_arm
+            event_arm = input_KT[event['chromosome']].q_arm
         else:
             raise ValueError('arm selection must be either p or q')
 
@@ -50,28 +36,18 @@ if mode == 'manual':
         elif event['type'] == 'inversion':
             inversion(event_arm, event['start'], event['end'])
 
-    Output_KT(KT, "KT_" + instruction['job_name'] + ".txt")
-    KT_to_FASTA(KT, genome_path="../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
-                chr_name_file="../Metadata/Chr_Names.txt",
-                output_path=instruction['job_name'] + ".fasta")
-    # KT_to_FASTA(KT, genome_path="../Genomes/test_genome.fasta",
-    #             chr_name_file="../Metadata/Chr_Names.txt",
-    #             output_path=instruction['job_name'] + ".fasta")
 
-# automatic mode
-elif mode == 'automatic':
-    event_settings = instruction['event_setting']
-
+def automatic_mode(input_event_settings, input_number_of_events, input_KT):
     # scale event weights
     sum_weight = 0.0
     for index in range(6):
-        sum_weight += event_settings[index]['ratio']
+        sum_weight += input_event_settings[index]['ratio']
     event_weights = []
     for index in range(6):
-        event_weights.append(float(event_settings[index]['ratio']) / sum_weight)
+        event_weights.append(float(input_event_settings[index]['ratio']) / sum_weight)
 
     # perform events
-    for event_index in range(instruction['number_of_events']):
+    for event_index in range(input_number_of_events):
         # choose event
         current_event = random.choices(range(6), weights=event_weights)[0]
 
@@ -127,15 +103,15 @@ elif mode == 'automatic':
         current_event1_length = -1
         current_event2_length = -1
         if current_event in range(4):
-            current_event1_length = random.randint(event_settings[current_event]['min_size'],
-                                                   event_settings[current_event]['max_size'])
+            current_event1_length = random.randint(input_event_settings[current_event]['min_size'],
+                                                   input_event_settings[current_event]['max_size'])
             current_event1_length = min(current_event1_length, len(current_arm1) - 1)
         elif current_event == 4 or current_event == 5:
-            current_event1_length = random.randint(event_settings[current_event]['min_size1'],
-                                                   event_settings[current_event]['max_size1'])
+            current_event1_length = random.randint(input_event_settings[current_event]['min_size1'],
+                                                   input_event_settings[current_event]['max_size1'])
             current_event1_length = min(current_event1_length, len(current_arm1) - 1)
-            current_event2_length = random.randint(event_settings[current_event]['min_size2'],
-                                                   event_settings[current_event]['max_size2'])
+            current_event2_length = random.randint(input_event_settings[current_event]['min_size2'],
+                                                   input_event_settings[current_event]['max_size2'])
             current_event2_length = min(current_event2_length, len(current_arm2) - 1)
 
         # choose start location
@@ -163,8 +139,42 @@ elif mode == 'automatic':
                                      current_arm2, current_event_start_location2,
                                      current_event_start_location2 + current_event2_length)
 
-    # output
-    Output_KT(KT, "KT_" + instruction['job_name'] + ".txt")
-    KT_to_FASTA(KT, genome_path="../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
-                chr_name_file="../Metadata/Chr_Names.txt",
-                output_path=instruction['job_name'] + ".fasta")
+
+with open(args.JSON_file) as file:
+    instruction = json.load(file)
+
+chr_of_events = []
+if instruction['chromosomes'][0] == "ALL":
+    chr_of_events = ['Chr1', 'Chr2', 'Chr3', 'Chr4', 'Chr5', 'Chr6', 'Chr7', 'Chr8', 'Chr9', 'Chr10', 'Chr11', 'Chr12',
+                     'Chr13', 'Chr14', 'Chr15', 'Chr16', 'Chr17', 'Chr18', 'Chr19', 'Chr20', 'Chr21', 'Chr22', 'ChrX',
+                     'ChrY']
+else:
+    chr_of_events = instruction['chromosomes']
+KT = Prepare_Raw_KT(chr_of_events, "../Metadata/Full_Genome_Indices.txt")
+
+mode = instruction['mode']
+
+for job_index in range(len(mode)):
+    job_mode = instruction["job_cycle"][job_index]["mode"]
+    if mode[job_index] != job_mode:
+        raise ValueError("Job type needs to be verified.")
+
+    if job_mode == 'manual':
+        events = instruction["job_cycle"][job_index]['events']
+        manual_mode(events, KT)
+    elif job_mode == 'automatic':
+        event_settings = instruction["job_cycle"][job_index]['event_setting']
+        automatic_mode(event_settings, instruction["job_cycle"][job_index]['number_of_events'], KT)
+
+
+# output
+output_dir = args.output_dir
+Output_KT(KT, output_dir + "/KT_" + instruction['job_name'] + ".txt")
+KT_to_FASTA(KT, genome_path="../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
+            chr_name_file="../Metadata/Chr_Names.txt",
+            output_path=output_dir + "/" + instruction['job_name'] + ".fasta")
+
+# testing FASTA output using test_genome
+# KT_to_FASTA(KT, genome_path="../Genomes/test_genome.fasta",
+#             chr_name_file="../Metadata/Chr_Names.txt",
+#             output_path=input_instruction['job_name'] + ".fasta")
