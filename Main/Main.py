@@ -35,6 +35,17 @@ def manual_mode(input_events, input_KT):
             duplication(event_arm, event['start'], event['end'])
         elif event['type'] == 'inversion':
             inversion(event_arm, event['start'], event['end'])
+        elif event['type'] == 'duplication_inversion':
+            duplication_inversion(event_arm, event['start'], event['end'])
+        elif event['type'] == 'translocation_reciprocal':
+            if event['arm2'] == 'p':
+                event_arm2 = input_KT[event['chromosome2']].p_arm
+            elif event['arm2'] == 'q':
+                event_arm2 = input_KT[event['chromosome2']].q_arm
+            else:
+                raise ValueError('arm selection must be either p or q')
+            translocation_reciprocal(event_arm, event['start'], event['end'],
+                                     event_arm2, event['start2'], event['end2'])
 
 
 def automatic_mode(input_event_settings, input_number_of_events, input_KT):

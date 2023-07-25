@@ -5,14 +5,14 @@
     "automatic"
   ],
   "chromosomes": [
-    "Chr1"
+    "ALL"
   ],
   "job_cycle": [
     {
       "mode": "manual",
       "events": [
         {
-          "type": "deletion",
+          "type": "translocation_reciprocal",
           "chromosome": "Chr1",
           "arm": "p",
           "start": 1050000,

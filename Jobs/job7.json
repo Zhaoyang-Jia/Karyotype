@@ -1,0 +1,88 @@
+{
+  "job_name": "NCCN38_61_66_r2",
+  "mode": [
+    "manual",
+    "automatic"
+  ],
+  "chromosomes": [
+    "ALL"
+  ],
+  "job_cycle": [
+    {
+      "mode": "manual",
+      "events": [
+        {
+          "type": "inter_translocation_reciprocal",
+          "chromosome": "Chr9",
+          "chromosome2": "Chr22",
+          "arm": "q",
+          "arm2": "q",
+          "start": 85194457,
+          "end": 85369116,
+          "start2": 8125385,
+          "end2": 8263718
+        },
+        {
+          "type": "duplication",
+          "chromosome": "Chr17",
+          "arm": "q",
+          "start": 0,
+          "end": 56361459
+        },
+        {
+          "type": "deletion",
+          "chromosome": "Chr17",
+          "arm": "p",
+          "start": 7661779,
+          "end": 7657550
+        }
+      ]
+    },
+    {
+      "mode": "automatic",
+      "number_of_events": 20,
+      "event_setting": [
+        {
+          "type": "deletion",
+          "ratio": 1,
+          "min_size": 1000000,
+          "max_size": 10000000
+        },
+        {
+          "type": "duplication",
+          "ratio": 1,
+          "min_size": 1000000,
+          "max_size": 10000000
+        },
+        {
+          "type": "inversion",
+          "ratio": 1,
+          "min_size": 1000000,
+          "max_size": 2000000
+        },
+        {
+          "type": "duplication_inversion",
+          "ratio": 1,
+          "min_size": 1000000,
+          "max_size": 2000000
+        },
+        {
+          "type": "intra_translocation_reciprocal",
+          "ratio": 0.3,
+          "min_size1": 1000000,
+          "max_size1": 2000000,
+          "min_size2": 1000000,
+          "max_size2": 2000000
+        },
+        {
+          "type": "inter_translocation_reciprocal",
+          "ratio": 0.2,
+          "min_size1": 1000000,
+          "max_size1": 2000000,
+          "min_size2": 1000000,
+          "max_size2": 2000000
+        }
+      ]
+    }
+  ]
+}
