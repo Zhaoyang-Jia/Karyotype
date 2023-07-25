@@ -1,0 +1,49 @@
+{
+  "job_name": "UT",
+  "template_KT": "KT_file_path" OR "default",
+  "haploid_or_diploid": "haploid" OR "diploid",
+  "chromosomes": ["ALL"] OR ["Chr1", "ChrX", etc.],
+  "number_of_events": 4 OR [lower_bound, upper_bound],
+  "event_setting": [
+    {
+      "type": "deletion",
+      "ratio": 1,
+      "min_size": 100000,
+      "max_size": 200000
+    },
+    {
+      "type": "duplication",
+      "ratio": 1,
+      "min_size": 100000,
+      "max_size": 200000
+    },
+    {
+      "type": "inversion",
+      "ratio": 1,
+      "min_size": 100000,
+      "max_size": 200000
+    },
+    {
+      "type": "duplication_inversion",
+      "ratio": 1,
+      "min_size": 100000,
+      "max_size": 200000
+    },
+    {
+      "type": "intra_translocation_reciprocal",
+      "ratio": 1,
+      "min_size1": 100000,
+      "max_size1": 200000,
+      "min_size2": 100000,
+      "max_size2": 200000
+    },
+    {
+    "type": "inter_translocation_reciprocal",
+    "ratio": 1,
+    "min_size1": 100000,
+    "max_size1": 200000,
+    "min_size2": 100000,
+    "max_size2": 200000
+    }
+  ]
+}

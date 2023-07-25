@@ -31,23 +31,6 @@ def Output_KT(KT: {str: Chromosome}, output_path):
     segment_list = list(segment_set)
     segment_list.sort()
 
-    # segment_list = []
-    # for chr_name, chr_obj in KT.items():
-    #     segment_list.extend(chr_obj.p_arm.segments)
-    #     segment_list.extend(chr_obj.q_arm.segments)
-    #     segment_list.extend(find_deleted_segments(chr_obj.p_arm))
-    #     segment_list.extend(find_deleted_segments(chr_obj.q_arm))
-    # segment_list.sort()
-
-    # put segments into right direction
-    # for segment in segment_list:
-    #     if not segment.direction():
-    #         segment.invert()
-    #
-    # key_function = lambda x: (x.chr, x.start, x.end)
-    # unique_segments = [next(group) for key, group in groupby(segment_list, key_function)]
-    # segment_list = unique_segments
-
     segment_dict = {}
     for index in range(len(segment_list)):
         segment_dict[segment_list[index]] = index + 1

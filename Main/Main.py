@@ -181,9 +181,9 @@ for job_index in range(len(mode)):
 # output
 output_dir = args.output_dir
 Output_KT(KT, output_dir + "/KT_" + instruction['job_name'] + ".txt")
-KT_to_FASTA(KT, genome_path="../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
-            chr_name_file="../Metadata/Chr_Names.txt",
-            output_path=output_dir + "/" + instruction['job_name'] + ".fasta")
+# KT_to_FASTA(KT, genome_path="../Genomes/GCF_000001405.26_GRCh38_genomic.fasta",
+#             chr_name_file="../Metadata/Chr_Names.txt",
+#             output_path=output_dir + "/" + instruction['job_name'] + ".fasta")
 
 # testing FASTA output using test_genome
 # KT_to_FASTA(KT, genome_path="../Genomes/test_genome.fasta",

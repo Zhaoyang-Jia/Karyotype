@@ -1,0 +1,30 @@
+{
+  "job_name": "test_manual",
+  "mode": [
+    "manual"
+  ],
+  "chromosomes": [
+    "Chr1"
+  ],
+  "job_cycle": [
+    {
+      "mode": "manual",
+      "events": [
+        {
+          "type": "duplication",
+          "chromosome": "Chr1",
+          "arm": "p",
+          "start": 1000000,
+          "end": 1200000
+        },
+        {
+          "type": "deletion",
+          "chromosome": "Chr1",
+          "arm": "p",
+          "start": 1000000,
+          "end": 1100000
+        }
+      ]
+    }
+  ]
+}
